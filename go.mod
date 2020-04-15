@@ -1,7 +1,7 @@
 module github.com/zalando-incubator/es-operator
 
 require (
-	github.com/cenk/backoff v2.0.0+incompatible
+	github.com/cenk/backoff v2.2.1+incompatible
 	github.com/evanphx/json-patch v4.1.0+incompatible // indirect
 	github.com/go-resty/resty v1.7.0
 	github.com/gogo/protobuf v1.2.1 // indirect
