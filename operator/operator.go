@@ -675,7 +675,7 @@ func prioToName(priority int) string {
 func priorityNames(priority int) []string {
 	priorities := make([]string, 0)
 	for _, prio := range []int{podDrainingPriority, unschedulableNodePriority, nodeSelectorPriority, podOldRevisionPriority, stsReplicaDiffPriority} {
-		if priority >= prio {
+		if priority&prio > 0 {
 			priorities = append(priorities, prioToName(prio))
 		}
 	}
@@ -705,12 +705,13 @@ func prioritizePodsForUpdate(pods []v1.Pod, sts *appsv1.StatefulSet, sr Stateful
 
 		// if Pod is marked draining it gets the highest priority.
 		if _, ok := pod.Annotations[operatorPodDrainingAnnotationKey]; ok {
+			log.Infof("Found draining Pod %s/%s", prio.Pod.Namespace, prio.Pod.Name)
 			prio.Priority += podDrainingPriority
 		}
 
 		// check if Pod has assigned node
 		if pod.Spec.NodeName == "" {
-			log.Debugf("Skipping Pod %s/%s. No assigned node found.", prio.Pod.Namespace, prio.Pod.Name)
+			log.Infof("Skipping Pod %s/%s. No assigned node found.", prio.Pod.Namespace, prio.Pod.Name)
 			continue
 		}
 
@@ -719,11 +720,13 @@ func prioritizePodsForUpdate(pods []v1.Pod, sts *appsv1.StatefulSet, sr Stateful
 		// drained, so we should priorities moving pods away from the
 		// node.
 		if _, ok := unschedulableNodes[pod.Spec.NodeName]; ok {
+			log.Infof("Found unschedulable node for Pod %s/%s", prio.Pod.Namespace, prio.Pod.Name)
 			prio.Priority += unschedulableNodePriority
 		}
 
 		// if Pod is NOT on a priority selected node it gets high priority.
 		if _, ok := priorityNodes[pod.Spec.NodeName]; !ok {
+			log.Infof("Found Pod %s/%s not on priority node", prio.Pod.Namespace, prio.Pod.Name)
 			prio.Priority += nodeSelectorPriority
 		}
 
@@ -731,6 +734,7 @@ func prioritizePodsForUpdate(pods []v1.Pod, sts *appsv1.StatefulSet, sr Stateful
 		// the StatefulSet then it gets high priority.
 		// TODO: check if UpdateRevision is always set.
 		if hash, ok := pod.Labels[controllerRevisionHashLabelKey]; ok && sts.Status.UpdateRevision != hash {
+			log.Infof("Found different update revision for Pod %s/%s: old %s vs new %s", prio.Pod.Namespace, prio.Pod.Name, hash, sts.Status.UpdateRevision)
 			prio.Priority += podOldRevisionPriority
 		}
 
@@ -745,6 +749,7 @@ func prioritizePodsForUpdate(pods []v1.Pod, sts *appsv1.StatefulSet, sr Stateful
 
 		// scale out by one to perform the update
 		if desiredReplicas != replicas {
+			log.Infof("Found Pod %s/%s STS has different replicas count", prio.Pod.Namespace, prio.Pod.Name)
 			prio.Priority += stsReplicaDiffPriority
 		}
 

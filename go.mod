@@ -42,7 +42,10 @@ require (
 	k8s.io/api v0.0.0-20190222213804-5cb15d344471
 	k8s.io/apimachinery v0.0.0-20190221213512-86fb29eff628
 	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/code-generator v0.0.0-20181117043124-c2090bec4d9b // indirect
+	k8s.io/gengo v0.0.0-20200422151552-d283a8840aab // indirect
 	k8s.io/klog v0.2.0 // indirect
+	k8s.io/klog/v2 v2.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20190228160746-b3a7cee44a30 // indirect
 	k8s.io/metrics v0.0.0-20190226180357-f3f09b9076d1
 	sigs.k8s.io/yaml v1.1.0 // indirect
